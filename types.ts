@@ -11,6 +11,7 @@ export interface Message {
   timestamp: number;
   isStreaming?: boolean;
   chartData?: SystemMetrics | null;
+  wasHealed?: boolean; // True if response was auto-completed due to cutoff
 }
 
 export interface ChartDataPoint {

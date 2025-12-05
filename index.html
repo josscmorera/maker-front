@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MakerMind // Engineering Intelligence</title>
     <meta name="description" content="MakerMind - AI-powered mechanical reasoning engine for designing, analyzing, and building real-world physical systems." />
-    <meta name="theme-color" content="#0C0D0F" />
+    <meta name="theme-color" content="#020405" />
     
     <!-- Favicon (inline SVG for simplicity) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230C0D0F'/%3E%3Cpath d='M16 6L6 12v8l10 6 10-6v-8L16 6z' fill='none' stroke='%230EE7C7' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%230EE7C7'/%3E%3C/svg%3E" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23020405'/%3E%3Cpath d='M16 6L6 12v8l10 6 10-6v-8L16 6z' fill='none' stroke='%2338B2AC' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%2338B2AC'/%3E%3C/svg%3E" />
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,26 +25,26 @@
           extend: {
             colors: {
               mm: {
-                // Core backgrounds
-                black: '#0C0D0F',
-                graphite: '#1A1D1F',
-                carbon: '#141618',
+                // Core backgrounds - Deep Space
+                black: '#020405',
+                graphite: '#0A0C10',
+                carbon: '#12151A',
                 
                 // Blueprint lines
-                blueprint: '#2A2F33',
-                steel: '#3D4349',
+                blueprint: '#1E2329',
+                steel: '#2A303C',
                 
                 // Text
-                'text-primary': '#DDE1E7',
-                'text-secondary': '#7E8A98',
+                'text-primary': '#E2E8F0',
+                'text-secondary': '#94A3B8',
                 
-                // Accents
-                teal: '#0EE7C7',
-                cyan: '#47F3FF',
+                // Accents - Holographic
+                teal: '#38B2AC',   // Structural Holo
+                cyan: '#4FD1C5',   // Active Holo
                 
                 // Status
-                warning: '#F3C623',
-                danger: '#FF4747',
+                warning: '#D69E2E',
+                danger: '#E53E3E',
               }
             },
             fontFamily: {
@@ -76,12 +76,12 @@
     <style>
       /* Prevent FOUC */
       html {
-        background-color: #0C0D0F;
+        background-color: #020405;
       }
       
       body {
-        background-color: #0C0D0F;
-        color: #DDE1E7;
+        background-color: #020405;
+        color: #E2E8F0;
         font-family: 'Inter', sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
@@ -93,34 +93,34 @@
         height: 6px;
       }
       ::-webkit-scrollbar-track {
-        background: #0C0D0F; 
+        background: #020405; 
       }
       ::-webkit-scrollbar-thumb {
-        background: #3D4349;
+        background: #2A303C;
         border-radius: 3px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #0EE7C7; 
+        background: #38B2AC; 
       }
       
       /* Firefox scrollbar */
       * {
         scrollbar-width: thin;
-        scrollbar-color: #3D4349 #0C0D0F;
+        scrollbar-color: #2A303C #020405;
       }
       
       /* Selection */
       ::selection {
-        background: #0EE7C7;
-        color: #0C0D0F;
+        background: #38B2AC;
+        color: #020405;
       }
       
       /* Blueprint grid background class */
       .blueprint-grid {
-        background-color: #0C0D0F;
+        background-color: #020405;
         background-image:
-          linear-gradient(rgba(42, 47, 51, 0.5) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(42, 47, 51, 0.5) 1px, transparent 1px);
+          linear-gradient(rgba(45, 55, 72, 0.15) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(45, 55, 72, 0.15) 1px, transparent 1px);
         background-size: 40px 40px;
       }
       
@@ -142,7 +142,7 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(180deg, transparent, rgba(14, 231, 199, 0.03), transparent);
+        background: linear-gradient(180deg, transparent, rgba(56, 178, 172, 0.05), transparent);
         animation: scanline 4s linear infinite;
       }
       @keyframes scanline {
@@ -152,7 +152,7 @@
       
       /* Text glow utility */
       .text-glow-teal {
-        text-shadow: 0 0 10px rgba(14, 231, 199, 0.3);
+        text-shadow: 0 0 10px rgba(56, 178, 172, 0.3);
       }
       
       /* Animation utilities */

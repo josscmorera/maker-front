@@ -81,7 +81,7 @@ const ReasonNode: React.FC<ReasonNodeProps> = ({ step, index, isLast }) => {
         ${step.status === 'complete' 
           ? 'bg-mm-teal border-mm-teal' 
           : step.status === 'active'
-            ? 'bg-mm-black border-mm-teal shadow-[0_0_12px_rgba(14,231,199,0.4)]'
+            ? 'bg-mm-black border-mm-teal shadow-[0_0_12px_rgba(56,178,172,0.4)]'
             : 'bg-mm-black border-mm-blueprint'
         }
       `}>
@@ -149,9 +149,9 @@ export const MiniFlow: React.FC<MiniFlowProps> = ({ steps, className = '' }) => 
             <div className={`
               w-2 h-2 rounded-full transition-all duration-300
               ${step.status === 'complete' 
-                ? 'bg-mm-teal shadow-[0_0_6px_rgba(14,231,199,0.4)]' 
+                ? 'bg-mm-teal shadow-[0_0_6px_rgba(56,178,172,0.4)]' 
                 : step.status === 'active'
-                  ? 'bg-mm-teal animate-pulse shadow-[0_0_8px_rgba(14,231,199,0.6)]'
+                  ? 'bg-mm-teal animate-pulse shadow-[0_0_8px_rgba(56,178,172,0.6)]'
                   : 'bg-mm-steel'
               }
             `} />

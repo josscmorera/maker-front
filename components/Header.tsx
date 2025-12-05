@@ -40,7 +40,7 @@ export const Header: React.FC<HeaderProps> = ({ onNewChat, hasMessages = false }
           
           {/* Icon */}
           <Cpu className="w-5 h-5 text-mm-teal relative z-10 
-                          group-hover:drop-shadow-[0_0_8px_rgba(14,231,199,0.6)]
+                          group-hover:drop-shadow-[0_0_8px_rgba(56,178,172,0.6)]
                           transition-all duration-300" />
           
           {/* Pulse effect */}
@@ -59,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({ onNewChat, hasMessages = false }
           {/* Status line */}
           <div className="flex items-center gap-2 text-[10px] text-white/60 font-mono leading-none">
             <span className="w-1.5 h-1.5 bg-mm-teal rounded-full animate-pulse 
-                             shadow-[0_0_6px_rgba(14,231,199,0.5)]" />
+                             shadow-[0_0_6px_rgba(56,178,172,0.5)]" />
             <span className="uppercase tracking-widest">Sys.Online</span>
             <span className="text-white/20">│</span>
             <span className="text-mm-teal/80">v{VERSION}</span>

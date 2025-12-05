@@ -7,35 +7,35 @@ export const VERSION = "2.5.0-F";
 export const TAGLINE = "Engineering Intelligence";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// COLOR TOKENS — Industrial Palette
+// COLOR TOKENS — Deep Space / Sci-Fi HUD Palette
 // ─────────────────────────────────────────────────────────────────────────────
 export const COLORS = {
   // Core Backgrounds
-  background: "#0C0D0F",      // Deep black
-  panel: "#1A1D1F",           // Carbon panel
-  carbon: "#141618",          // Dark carbon
+  background: "#020405",      // Deepest void
+  panel: "#0A0C10",           // Dark background
+  carbon: "#12151A",          // Panel background
   
   // Blueprint Lines
-  border: "#2A2F33",          // Blueprint lines
-  steel: "#3D4349",           // Steel gray
+  border: "#1E2329",          // Grid/Lines
+  steel: "#2A303C",           // Structural elements
   
   // Text Hierarchy
-  textPrimary: "#DDE1E7",     // Primary text
-  textSecondary: "#7E8A98",   // Secondary text (titanium)
-  textMuted: "#4A5158",       // Muted text
+  textPrimary: "#E2E8F0",     // Off-white
+  textSecondary: "#94A3B8",   // Slate Blue Grey
+  textMuted: "#475569",       // Darker Slate
   
   // Accent Colors
-  accent: "#0EE7C7",          // Industrial Teal - Primary accent
-  accentGlow: "rgba(14, 231, 199, 0.3)",
-  cyan: "#47F3FF",            // Neon Cyan - Highlight
-  cyanGlow: "rgba(71, 243, 255, 0.2)",
+  accent: "#38B2AC",          // Structural Accent (Hologram Teal)
+  accentGlow: "rgba(56, 178, 172, 0.15)",
+  cyan: "#4FD1C5",            // Active Element
+  cyanGlow: "rgba(79, 209, 197, 0.15)",
   
   // Status Colors
-  warning: "#F3C623",         // Safety Yellow
-  warningGlow: "rgba(243, 198, 35, 0.2)",
-  danger: "#FF4747",          // Danger Red
-  dangerGlow: "rgba(255, 71, 71, 0.2)",
-  success: "#0EE7C7",         // Same as accent
+  warning: "#D69E2E",         // Muted Amber
+  warningGlow: "rgba(214, 158, 46, 0.15)",
+  danger: "#E53E3E",          // Engineered Red
+  dangerGlow: "rgba(229, 62, 62, 0.15)",
+  success: "#38A169",         // Muted Green
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -43,11 +43,11 @@ export const COLORS = {
 // ─────────────────────────────────────────────────────────────────────────────
 export const CHART_COLORS = [
   COLORS.accent,      // Teal
-  COLORS.cyan,        // Cyan
-  "#7E8A98",          // Titanium
+  COLORS.cyan,        // Active Cyan
+  "#94A3B8",          // Slate
   COLORS.steel,       // Steel
-  COLORS.textPrimary, // Blueprint
-  COLORS.warning,     // Yellow
+  COLORS.textPrimary, // White
+  COLORS.warning,     // Amber
 ] as const;
 
 // ─────────────────────────────────────────────────────────────────────────────

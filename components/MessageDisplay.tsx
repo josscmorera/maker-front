@@ -3,7 +3,7 @@ import { Message, MessageType } from '../types';
 import { 
   Bot, User, CheckCircle2, Cpu, Zap, Terminal, Copy, Check, Code2, Table2,
   Download, FileText, FileJson, Printer, ChevronDown, FileCode, Share2,
-  GitBranch, Workflow, Box, RefreshCw, Sparkles, AlertCircle
+  GitBranch, Workflow, Box, RefreshCw, Sparkles, AlertCircle, WandSparkles
 } from 'lucide-react';
 import { Block, SectionHeader } from './Block';
 import { MiniFlow } from './ReasonFlow';
@@ -18,21 +18,21 @@ mermaid.initialize({
   logLevel: 'error', // Reduce noise
   securityLevel: 'loose', // Allow more flexibility
   themeVariables: {
-    primaryColor: '#0EE7C7',
-    primaryTextColor: '#DDE1E7',
-    primaryBorderColor: '#2A2F33',
-    lineColor: '#47F3FF',
-    secondaryColor: '#1A1D1F',
-    tertiaryColor: '#0C0D0F',
-    background: '#0C0D0F',
-    mainBkg: '#1A1D1F',
-    nodeBorder: '#0EE7C7',
-    clusterBkg: '#1A1D1F',
-    clusterBorder: '#2A2F33',
-    titleColor: '#0EE7C7',
-    edgeLabelBackground: '#1A1D1F',
-    textColor: '#DDE1E7',
-    nodeTextColor: '#DDE1E7',
+    primaryColor: '#38B2AC',
+    primaryTextColor: '#E2E8F0',
+    primaryBorderColor: '#1E2329',
+    lineColor: '#4FD1C5',
+    secondaryColor: '#0A0C10',
+    tertiaryColor: '#020405',
+    background: '#020405',
+    mainBkg: '#0A0C10',
+    nodeBorder: '#38B2AC',
+    clusterBkg: '#0A0C10',
+    clusterBorder: '#1E2329',
+    titleColor: '#38B2AC',
+    edgeLabelBackground: '#0A0C10',
+    textColor: '#E2E8F0',
+    nodeTextColor: '#E2E8F0',
   },
   flowchart: {
     curve: 'basis',
@@ -166,7 +166,7 @@ const EmptyState: React.FC = () => {
           
           {/* Glow effect */}
           <div className="absolute inset-0 rounded-full 
-                          bg-[radial-gradient(circle,rgba(14,231,199,0.1)_0%,transparent_70%)]" />
+                          bg-[radial-gradient(circle,rgba(56,178,172,0.1)_0%,transparent_70%)]" />
         </div>
         
         {/* Title */}
@@ -301,6 +301,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, index }) => {
                   <span>Computation Complete</span>
                   <span className="mx-1 text-white/20">•</span>
                   <span>{(cleanContent.length / 1000).toFixed(2)}kb Data</span>
+                  
+                  {/* Auto-healed indicator */}
+                  {message.wasHealed && (
+                    <>
+                      <span className="mx-1 text-white/20">•</span>
+                      <span className="flex items-center gap-1 text-mm-cyan">
+                        <WandSparkles size={10} />
+                        <span>Auto-Completed</span>
+                      </span>
+                    </>
+                  )}
                 </div>
                 
                 <ExportMenu content={cleanContent} timestamp={message.timestamp} />
@@ -426,10 +437,10 @@ System: MakerMind v2.5.0-F
   <title>MakerMind Blueprint - ${new Date(timestamp).toLocaleDateString()}</title>
   <style>
     :root {
-      --mm-black: #0C0D0F;
-      --mm-graphite: #1A1D1F;
-      --mm-teal: #0EE7C7;
-      --mm-cyan: #47F3FF;
+      --mm-black: #020405;
+      --mm-graphite: #0A0C10;
+      --mm-teal: #38B2AC;
+      --mm-cyan: #4FD1C5;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -467,7 +478,7 @@ System: MakerMind v2.5.0-F
       overflow: hidden;
     }
     .section-header {
-      background: linear-gradient(180deg, rgba(14,231,199,0.1) 0%, transparent 100%);
+      background: linear-gradient(180deg, rgba(56,178,172,0.1) 0%, transparent 100%);
       padding: 12px 16px;
       border-bottom: 1px solid #2A2F33;
       font-family: 'Saira Condensed', sans-serif;

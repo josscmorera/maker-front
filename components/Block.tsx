@@ -45,7 +45,7 @@ export const Block: React.FC<BlockProps> = ({
   
   const variantClasses = {
     default: 'border-mm-blueprint',
-    highlighted: 'border-mm-teal shadow-[0_0_20px_rgba(14,231,199,0.15)]',
+    highlighted: 'border-mm-teal shadow-[0_0_20px_rgba(56,178,172,0.15)]',
     warning: 'border-mm-warning',
   };
   

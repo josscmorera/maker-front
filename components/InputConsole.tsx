@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, ChevronRight, Loader2, Terminal, Zap } from 'lucide-react';
+import { Send, ChevronRight, Loader2, Terminal, Zap, Sparkles } from 'lucide-react';
 
 interface InputConsoleProps {
   onSendMessage: (message: string) => void;
   isProcessing: boolean;
+  isHealing?: boolean; // New: track healing/auto-completion state
 }
 
-export const InputConsole: React.FC<InputConsoleProps> = ({ onSendMessage, isProcessing }) => {
+export const InputConsole: React.FC<InputConsoleProps> = ({ onSendMessage, isProcessing, isHealing = false }) => {
   const [input, setInput] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -57,7 +58,7 @@ export const InputConsole: React.FC<InputConsoleProps> = ({ onSendMessage, isPro
           bg-mm-graphite/30 border rounded
           p-3 transition-all duration-300
           ${isFocused 
-            ? 'border-mm-teal/50 bg-mm-graphite/50 shadow-[0_0_20px_rgba(14,231,199,0.1)]' 
+            ? 'border-mm-teal/50 bg-mm-graphite/50 shadow-[0_0_20px_rgba(56,178,172,0.1)]' 
             : 'border-mm-blueprint/50'
           }
         `}>
@@ -87,7 +88,9 @@ export const InputConsole: React.FC<InputConsoleProps> = ({ onSendMessage, isPro
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             placeholder={isProcessing 
-              ? "COMPUTING ENGINEERING SOLUTION..." 
+              ? isHealing 
+                ? "AUTO-COMPLETING RESPONSE..." 
+                : "COMPUTING ENGINEERING SOLUTION..." 
               : "Describe what you want to build..."
             }
             disabled={isProcessing}
@@ -109,7 +112,7 @@ export const InputConsole: React.FC<InputConsoleProps> = ({ onSendMessage, isPro
               relative p-2.5 rounded transition-all duration-200 group
               ${!input.trim() || isProcessing 
                 ? 'text-mm-steel cursor-not-allowed opacity-40' 
-                : 'text-mm-black bg-mm-teal hover:bg-mm-cyan shadow-[0_0_15px_rgba(14,231,199,0.3)] hover:shadow-[0_0_25px_rgba(71,243,255,0.4)]'
+                : 'text-mm-black bg-mm-teal hover:bg-mm-cyan shadow-[0_0_15px_rgba(56,178,172,0.3)] hover:shadow-[0_0_25px_rgba(79,209,197,0.4)]'
               }
             `}
           >
@@ -154,13 +157,15 @@ export const InputConsole: React.FC<InputConsoleProps> = ({ onSendMessage, isPro
             <div className="flex items-center gap-1.5">
               <span className={`
                 w-1.5 h-1.5 rounded-full transition-all duration-300
-                ${isProcessing 
-                  ? 'bg-mm-warning animate-pulse shadow-[0_0_6px_rgba(243,198,35,0.5)]' 
-                  : 'bg-mm-teal shadow-[0_0_4px_rgba(14,231,199,0.3)]'
+                ${isHealing 
+                  ? 'bg-mm-cyan animate-pulse shadow-[0_0_6px_rgba(79,209,197,0.5)]' 
+                  : isProcessing 
+                    ? 'bg-mm-warning animate-pulse shadow-[0_0_6px_rgba(214,158,46,0.5)]' 
+                    : 'bg-mm-teal shadow-[0_0_4px_rgba(56,178,172,0.3)]'
                 }
               `} />
-              <span className={isProcessing ? 'text-mm-warning' : 'text-mm-steel'}>
-                {isProcessing ? 'Computing' : 'Ready'}
+              <span className={isHealing ? 'text-mm-cyan' : isProcessing ? 'text-mm-warning' : 'text-mm-steel'}>
+                {isHealing ? 'Auto-healing' : isProcessing ? 'Computing' : 'Ready'}
               </span>
             </div>
           </div>

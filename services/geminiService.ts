@@ -108,6 +108,123 @@ For simpler single-chart responses, you can still use the original format:
 Only output this JSON if you have enough data to estimate a breakdown.
 `;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// RESPONSE COMPLETENESS DETECTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface CompletenessCheck {
+  isComplete: boolean;
+  reason: string;
+  missingIndicators: string[];
+  lastContent: string; // Last ~200 chars for context
+}
+
+/**
+ * Analyze if a response appears to be complete or was cut off
+ */
+function checkResponseCompleteness(text: string): CompletenessCheck {
+  const trimmedText = text.trim();
+  const lastContent = trimmedText.slice(-200);
+  const missingIndicators: string[] = [];
+  
+  // Minimum viable response length (a real engineering response should be substantial)
+  if (trimmedText.length < 500) {
+    return {
+      isComplete: false,
+      reason: 'Response too short for engineering analysis',
+      missingIndicators: ['insufficient_length'],
+      lastContent
+    };
+  }
+  
+  // Check for incomplete code blocks (opened but not closed)
+  const codeBlockStarts = (trimmedText.match(/```/g) || []).length;
+  if (codeBlockStarts % 2 !== 0) {
+    missingIndicators.push('unclosed_code_block');
+  }
+  
+  // Check for incomplete tables (started table but unfinished)
+  const tableRows = trimmedText.match(/^\|.*\|$/gm) || [];
+  if (tableRows.length > 0) {
+    const lastTableRow = tableRows[tableRows.length - 1];
+    // Check if table might be incomplete (missing closing row or columns inconsistent)
+    if (lastTableRow && lastTableRow.split('|').length < 3) {
+      missingIndicators.push('incomplete_table');
+    }
+  }
+  
+  // Check for incomplete lists (ends with a list item marker)
+  if (/[-*•]\s*$/.test(trimmedText) || /^\d+\.\s*$/m.test(trimmedText.slice(-50))) {
+    missingIndicators.push('incomplete_list');
+  }
+  
+  // Check for incomplete sentences (ends mid-word or with common incomplete patterns)
+  const endsWithIncomplete = /[\w,;:\-–—]\s*$/i.test(trimmedText) && 
+                             !/[.!?)"'\]}\n]\s*$/i.test(trimmedText);
+  if (endsWithIncomplete) {
+    missingIndicators.push('mid_sentence_cutoff');
+  }
+  
+  // Check for "to be continued" patterns
+  const continuePatterns = [
+    /\bwill\s+(?:be|need|require)\s*$/i,
+    /\bincluding\s*$/i,
+    /\bsuch\s+as\s*$/i,
+    /\bfor\s+example\s*$/i,
+    /\bthe\s+following\s*$/i,
+    /:\s*$/,
+    /\bsteps?\s*:\s*$/i,
+    /\bcomponents?\s*:\s*$/i,
+  ];
+  
+  for (const pattern of continuePatterns) {
+    if (pattern.test(trimmedText.slice(-100))) {
+      missingIndicators.push('trailing_continuation_pattern');
+      break;
+    }
+  }
+  
+  // Check for expected engineering sections (at least 3 of 5 expected)
+  const sectionPatterns = [
+    /project\s*understanding/i,
+    /engineering\s*decomposition/i,
+    /calculations?|technical\s*logic/i,
+    /build\s*blueprint|bill\s*of\s*materials|bom/i,
+    /testing|failure\s*analysis/i
+  ];
+  
+  const foundSections = sectionPatterns.filter(p => p.test(trimmedText)).length;
+  // Only flag if it looks like an engineering response but missing sections
+  const looksLikeEngineeringResponse = /^\d+\.\s/m.test(trimmedText) || 
+                                       sectionPatterns.some(p => p.test(trimmedText));
+  
+  if (looksLikeEngineeringResponse && foundSections < 3) {
+    missingIndicators.push('missing_engineering_sections');
+  }
+  
+  // Check for incomplete JSON block at end
+  const lastJsonBlockStart = trimmedText.lastIndexOf('```json');
+  if (lastJsonBlockStart !== -1) {
+    const afterJson = trimmedText.slice(lastJsonBlockStart);
+    const hasClosingFence = afterJson.includes('```', 7);
+    if (!hasClosingFence) {
+      missingIndicators.push('unclosed_json_block');
+    }
+  }
+  
+  // Determine overall completeness
+  const isComplete = missingIndicators.length === 0;
+  
+  return {
+    isComplete,
+    reason: isComplete 
+      ? 'Response appears complete' 
+      : `Potential issues: ${missingIndicators.join(', ')}`,
+    missingIndicators,
+    lastContent
+  };
+}
+
 class GeminiService {
   private ai: GoogleGenAI;
   private chatSession: Chat | null = null;
@@ -130,6 +247,78 @@ class GeminiService {
   // Clear the chat session to start fresh
   public clearSession(): void {
     this.chatSession = null;
+  }
+
+  /**
+   * Verify if a response is complete and request continuation if needed.
+   * Uses a separate one-shot call to avoid polluting the chat history.
+   */
+  public async verifyAndCompleteResponse(
+    originalPrompt: string,
+    currentResponse: string,
+    completenessCheck: CompletenessCheck,
+    onChunk?: (text: string) => void
+  ): Promise<{ continuation: string; wasIncomplete: boolean }> {
+    
+    // If already complete, return early
+    if (completenessCheck.isComplete) {
+      return { continuation: '', wasIncomplete: false };
+    }
+
+    console.log('🔧 Response appears incomplete:', completenessCheck.reason);
+    console.log('📝 Missing indicators:', completenessCheck.missingIndicators);
+
+    const continuationPrompt = `You are continuing an incomplete AI response. The previous response was cut off.
+
+ORIGINAL USER REQUEST:
+${originalPrompt}
+
+PREVIOUS RESPONSE (truncated, showing last part):
+...${completenessCheck.lastContent}
+
+DETECTED ISSUES:
+${completenessCheck.missingIndicators.map(i => `- ${i.replace(/_/g, ' ')}`).join('\n')}
+
+INSTRUCTIONS:
+1. Continue EXACTLY from where the response was cut off.
+2. Do NOT repeat any content that was already written.
+3. Complete any unfinished sections, tables, code blocks, or sentences.
+4. If sections are missing (like Testing & Failure Analysis), add them.
+5. Make sure to close any open code blocks with \`\`\`.
+6. If a JSON metrics block was expected but missing, include it.
+7. Write as if you're seamlessly continuing the previous text.
+
+CONTINUE THE RESPONSE:`;
+
+    try {
+      let continuation = '';
+      
+      // Use streaming for continuation too
+      const response = await this.ai.models.generateContentStream({
+        model: 'gemini-2.5-flash',
+        contents: continuationPrompt,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          temperature: 0.2,
+          maxOutputTokens: 4096, // Smaller limit for continuation
+        }
+      });
+
+      for await (const chunk of response) {
+        const c = chunk as GenerateContentResponse;
+        if (c.text) {
+          continuation += c.text;
+          onChunk?.(c.text);
+        }
+      }
+
+      console.log('✅ Response continuation complete, added', continuation.length, 'chars');
+      return { continuation, wasIncomplete: true };
+      
+    } catch (error) {
+      console.error('❌ Failed to complete response:', error);
+      return { continuation: '', wasIncomplete: true };
+    }
   }
 
   /**
@@ -267,8 +456,14 @@ Return ONLY the corrected Mermaid code. No explanations. No markdown fences. No 
 
   public async sendMessageStream(
     message: string,
-    onChunk: (text: string) => void
+    onChunk: (text: string) => void,
+    options?: {
+      autoComplete?: boolean; // Enable auto-completion for incomplete responses
+      maxCompletionAttempts?: number;
+    }
   ): Promise<SystemMetrics | null> {
+    const { autoComplete = true, maxCompletionAttempts = 2 } = options || {};
+    
     if (!this.chatSession) {
       await this.startChat();
     }
@@ -288,6 +483,46 @@ Return ONLY the corrected Mermaid code. No explanations. No markdown fences. No 
         if (c.text) {
             fullText += c.text;
             onChunk(c.text);
+        }
+      }
+
+      // ─────────────────────────────────────────────────────────────────────
+      // AUTO-COMPLETION: Verify response completeness and continue if needed
+      // ─────────────────────────────────────────────────────────────────────
+      if (autoComplete && fullText.length > 0) {
+        let completionAttempts = 0;
+        let currentText = fullText;
+        
+        while (completionAttempts < maxCompletionAttempts) {
+          const completenessCheck = checkResponseCompleteness(currentText);
+          
+          if (completenessCheck.isComplete) {
+            console.log('✅ Response verified complete');
+            break;
+          }
+          
+          completionAttempts++;
+          console.log(`🔄 Attempting response completion (attempt ${completionAttempts}/${maxCompletionAttempts})`);
+          
+          // Add a visual separator before continuation
+          const separator = '\n\n'; // Simple continuation
+          onChunk(separator);
+          fullText += separator;
+          
+          const { continuation, wasIncomplete } = await this.verifyAndCompleteResponse(
+            message,
+            currentText,
+            completenessCheck,
+            onChunk
+          );
+          
+          if (continuation) {
+            fullText += continuation;
+            currentText = fullText;
+          } else {
+            // No continuation received, break to avoid infinite loop
+            break;
+          }
         }
       }
 
@@ -324,6 +559,13 @@ Return ONLY the corrected Mermaid code. No explanations. No markdown fences. No 
     }
 
     return extractedMetrics;
+  }
+
+  /**
+   * Check if a response is complete (exposed for external use)
+   */
+  public checkCompleteness(text: string): CompletenessCheck {
+    return checkResponseCompleteness(text);
   }
 }
 

@@ -10,6 +10,7 @@ import { AlertTriangle, Cpu, Zap } from 'lucide-react';
 const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isHealing, setIsHealing] = useState(false); // New: track healing state
   const [activeMetrics, setActiveMetrics] = useState<SystemMetrics | null>(null);
 
   // Initial check for API Key
@@ -65,6 +66,7 @@ const App: React.FC = () => {
     geminiService.clearSession();
     setMessages([]);
     setActiveMetrics(null);
+    setIsHealing(false);
   };
 
   const handleSendMessage = async (text: string) => {
@@ -78,6 +80,7 @@ const App: React.FC = () => {
 
     setMessages(prev => [...prev, newUserMsg]);
     setIsProcessing(true);
+    setIsHealing(false);
     setActiveMetrics(null);
 
     // Create placeholder for AI message
@@ -91,20 +94,41 @@ const App: React.FC = () => {
     };
     setMessages(prev => [...prev, newAiMsg]);
 
+    // Track if we've entered healing mode
+    let healingTriggered = false;
+    let chunkCount = 0;
+
     try {
-      const metrics = await geminiService.sendMessageStream(text, (chunk) => {
-        setMessages(prev => prev.map(msg => {
-          if (msg.id === aiMsgId) {
-            return { ...msg, content: msg.content + chunk };
+      const metrics = await geminiService.sendMessageStream(
+        text, 
+        (chunk) => {
+          chunkCount++;
+          
+          // Detect if healing has started (continuation separator)
+          if (chunk === '\n\n' && chunkCount > 10) {
+            healingTriggered = true;
+            setIsHealing(true);
           }
-          return msg;
-        }));
-      });
+          
+          setMessages(prev => prev.map(msg => {
+            if (msg.id === aiMsgId) {
+              return { ...msg, content: msg.content + chunk };
+            }
+            return msg;
+          }));
+        },
+        { autoComplete: true, maxCompletionAttempts: 2 }
+      );
 
       // Finalize AI message
       setMessages(prev => prev.map(msg => {
         if (msg.id === aiMsgId) {
-          return { ...msg, isStreaming: false, chartData: metrics };
+          return { 
+            ...msg, 
+            isStreaming: false, 
+            chartData: metrics,
+            wasHealed: healingTriggered // Track if response was auto-completed
+          };
         }
         return msg;
       }));
@@ -127,6 +151,7 @@ const App: React.FC = () => {
       }));
     } finally {
       setIsProcessing(false);
+      setIsHealing(false);
     }
   };
 
@@ -142,9 +167,9 @@ const App: React.FC = () => {
         <div className="flex-1 flex flex-col min-w-0 relative blueprint-grid">
           {/* Blueprint grid with teal tint */}
           <div className="absolute inset-0 pointer-events-none z-0">
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(14,231,199,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(14,231,199,0.015)_1px,transparent_1px)] bg-[size:40px_40px]" />
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(56,178,172,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(56,178,172,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
             {/* Vignette effect */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(12,13,15,0.4)_100%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(2,4,5,0.8)_100%)]" />
           </div>
           
           {/* Content */}
@@ -153,7 +178,11 @@ const App: React.FC = () => {
           </div>
 
           <div className="z-20 relative">
-            <InputConsole onSendMessage={handleSendMessage} isProcessing={isProcessing} />
+            <InputConsole 
+              onSendMessage={handleSendMessage} 
+              isProcessing={isProcessing} 
+              isHealing={isHealing}
+            />
           </div>
         </div>
 
